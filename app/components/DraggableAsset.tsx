@@ -100,7 +100,7 @@ const DraggableAsset: React.FC<DraggableAssetProps> = ({
       onPositionChange(asset.id, { x: newX, y: finalY });
     }
     lastPointerPosition.copy(intersection);
-  }, [isDragging, isEditMode, asset.position, asset.id, boundaries, onPositionChange, camera, raycaster, gl, dragPlane, lastPointerPosition]);
+  }, [isDragging, isEditMode, asset.position, asset.id, asset.size.height, boundaries, onPositionChange, camera, raycaster, gl, dragPlane, lastPointerPosition, cardDimensions.height]);
 
   const handlePointerUp = useCallback((event: ThreeEvent<PointerEvent>) => {
     if (!isDragging) return;

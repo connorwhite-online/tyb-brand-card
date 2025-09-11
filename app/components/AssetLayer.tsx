@@ -12,19 +12,7 @@ interface AssetLayerProps {
   isEditMode: boolean;
 }
 
-// Initial static assets (logo) - scaled for much larger card dimensions
-const initialStaticAssets: StaticAsset[] = [
-  {
-    id: 'brand-logo',
-    type: 'static',
-    role: 'logo',
-    position: { x: -7.5, y: 4.2 }, // Top left corner, equidistant
-    size: { width: 3.2, height: 3.2 }, // Larger square format
-    src: '/assets/logo.png',
-    alt: 'Brand Logo',
-    zIndex: 1,
-  },
-];
+// This was previously used for static assets but is now handled directly in the component
 
 // Calculate dimensions that maintain aspect ratio within max constraints
 const calculateStickerDimensions = (maxWidth: number, maxHeight: number, aspectRatio?: number): { width: number; height: number } => {

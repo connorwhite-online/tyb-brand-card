@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { useGyroscope } from '../hooks/useGyroscope';
 
 interface Card2DProps {
@@ -88,10 +89,12 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
         <div className="card-surface">
           {/* Logo */}
           <div className="logo-container">
-            <img 
+            <Image 
               src="/assets/logo.png" 
               alt="Brand Logo"
               className="logo-image"
+              width={64}
+              height={64}
               onError={(e) => {
                 console.log('Logo failed to load');
                 (e.target as HTMLImageElement).style.backgroundColor = '#ddd';
@@ -108,10 +111,12 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
 
           {/* TYB Logo */}
           <div className="tyb-logo-container">
-            <img 
+            <Image 
               src="/assets/tyb-logo.svg" 
               alt="TYB Logo"
               className="tyb-logo-image"
+              width={80}
+              height={40}
               onError={(e) => {
                 console.log('TYB logo failed to load');
                 (e.target as HTMLImageElement).style.backgroundColor = '#ddd';
@@ -192,11 +197,13 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
                 document.addEventListener('touchend', handleTouchEnd);
               }}
             >
-              <img 
+              <Image 
                 src={`/assets/sticker-0${sticker.id.split('-')[1]}.png`}
                 alt={`Sticker ${sticker.id}`}
                 className="sticker-image"
                 draggable={false}
+                width={sticker.id === 'sticker-5' ? 90 : sticker.id === 'sticker-7' ? 72 : 60}
+                height={sticker.id === 'sticker-5' ? 60 : sticker.id === 'sticker-7' ? 72 : 60}
                 onError={(e) => {
                   console.log(`Sticker ${sticker.id} failed to load`);
                   (e.target as HTMLImageElement).style.backgroundColor = '#ff6b6b';

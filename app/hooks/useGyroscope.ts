@@ -25,9 +25,9 @@ export const useGyroscope = (isEnabled: boolean = true) => {
     setIsSupported(true);
 
     // For iOS 13+ we need to request permission
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    if (typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
       try {
-        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        const permission = await (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
         const granted = permission === 'granted';
         setHasPermission(granted);
         return granted;
