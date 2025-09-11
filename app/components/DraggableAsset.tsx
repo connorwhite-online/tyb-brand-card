@@ -52,11 +52,11 @@ const DraggableAsset: React.FC<DraggableAssetProps> = ({
     onDragStart(asset.id);
     
     // Calculate intersection with drag plane
-    raycaster.setFromCamera(
-      { x: (event.clientX / gl.domElement.clientWidth) * 2 - 1, 
-        y: -(event.clientY / gl.domElement.clientHeight) * 2 + 1 }, 
-      camera
+    const mousePosition = new THREE.Vector2(
+      (event.clientX / gl.domElement.clientWidth) * 2 - 1,
+      -(event.clientY / gl.domElement.clientHeight) * 2 + 1
     );
+    raycaster.setFromCamera(mousePosition, camera);
     const intersection = new THREE.Vector3();
     raycaster.ray.intersectPlane(dragPlane, intersection);
     lastPointerPosition.copy(intersection);
@@ -70,11 +70,11 @@ const DraggableAsset: React.FC<DraggableAssetProps> = ({
     event.stopPropagation();
     
     // Calculate intersection with drag plane
-    raycaster.setFromCamera(
-      { x: (event.clientX / gl.domElement.clientWidth) * 2 - 1, 
-        y: -(event.clientY / gl.domElement.clientHeight) * 2 + 1 }, 
-      camera
+    const mousePosition = new THREE.Vector2(
+      (event.clientX / gl.domElement.clientWidth) * 2 - 1,
+      -(event.clientY / gl.domElement.clientHeight) * 2 + 1
     );
+    raycaster.setFromCamera(mousePosition, camera);
     const intersection = new THREE.Vector3();
     raycaster.ray.intersectPlane(dragPlane, intersection);
     
