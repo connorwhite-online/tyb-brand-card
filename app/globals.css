@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card-gradient-from: #f9fafb;
+  --card-gradient-to: #f3f4f6;
+  --button-primary: #3b82f6;
+  --button-primary-hover: #2563eb;
+  --button-secondary: #6b7280;
+  --button-secondary-hover: #4b5563;
+  --toggle-bg: #e5e7eb;
+  --toggle-hover: #d1d5db;
 }
 
 @theme inline {
@@ -10,12 +18,50 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-nunito: var(--font-nunito);
 }
 
+/* Dark theme when class is applied */
+.dark {
+  --background: #000000;
+  --foreground: #ededed;
+  --card-gradient-from: #000000;
+  --card-gradient-to: #1a1a1a;
+  --button-primary: #3b82f6;
+  --button-primary-hover: #2563eb;
+  --button-secondary: #6b7280;
+  --button-secondary-hover: #4b5563;
+  --toggle-bg: #2a2a2a;
+  --toggle-hover: #3a3a3a;
+}
+
+/* Light theme when class is applied */
+.light {
+  --background: #ffffff;
+  --foreground: #171717;
+  --card-gradient-from: #f9fafb;
+  --card-gradient-to: #f3f4f6;
+  --button-primary: #3b82f6;
+  --button-primary-hover: #2563eb;
+  --button-secondary: #6b7280;
+  --button-secondary-hover: #4b5563;
+  --toggle-bg: #e5e7eb;
+  --toggle-hover: #d1d5db;
+}
+
+/* Fallback for system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
+  :root:not(.light):not(.dark) {
+    --background: #000000;
     --foreground: #ededed;
+    --card-gradient-from: #000000;
+    --card-gradient-to: #1a1a1a;
+    --button-primary: #3b82f6;
+    --button-primary-hover: #2563eb;
+    --button-secondary: #6b7280;
+    --button-secondary-hover: #4b5563;
+    --toggle-bg: #2a2a2a;
+    --toggle-hover: #3a3a3a;
   }
 }
 
@@ -23,4 +69,226 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  /* Disable overscroll behavior for better drag interactions */
+  overscroll-behavior: none;
+  /* Disable pull-to-refresh and swipe navigation */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  /* Prevent bounce/elastic scrolling on iOS */
+  -webkit-overflow-scrolling: auto;
+}
+
+html {
+  /* Disable overscroll at the document level */
+  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  /* Prevent zoom on double tap */
+  touch-action: manipulation;
+}
+
+/* Prevent touch actions that could interfere with dragging */
+canvas {
+  touch-action: none;
+}
+
+/* Disable text selection during drag operations */
+.drag-container {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Prevent context menu on long press */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 2D Card Styles */
+.card-container {
+  perspective: 1200px;
+  perspective-origin: center center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-2d {
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  aspect-ratio: 1.586; /* Credit card aspect ratio */
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
+
+.card-surface {
+  width: 100%;
+  height: 100%;
+  background-color: #f6fbc7;
+  border-radius: 24px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Logo Styles */
+.logo-container {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #e5e7eb;
+  border: 2px solid #d1d5db;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* Balance Styles */
+.balance-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* TYB Logo Styles */
+.tyb-logo-container {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 60px;
+  height: 30px;
+}
+
+.tyb-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.balance-text {
+  font-family: var(--font-nunito), sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: black;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Sticker Styles */
+.sticker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 10;
+  transform-style: preserve-3d;
+}
+
+/* Default size for square stickers */
+.sticker {
+  width: 50px;
+  height: 50px;
+}
+
+/* Larger size for wide stickers - let height size to content */
+.sticker[data-sticker-id="sticker-5"] {
+  width: 100px;
+  height: auto;
+  max-height: 80px; /* Prevent it from getting too tall */
+}
+
+/* Larger size for sticker-7 to improve visibility */
+.sticker[data-sticker-id="sticker-7"] {
+  width: 80px;
+  height: auto;
+  max-height: 80px; /* Prevent it from getting too tall */
+}
+
+.sticker.editable {
+  cursor: grab;
+}
+
+.sticker.editable:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.sticker.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.1);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+  z-index: 20;
+}
+
+.sticker-image {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  /* Force important to ensure mobile sizes override */
+  .logo-container {
+    width: 75px;
+    height: 75px;
+    top: 16px;
+    left: 16px;
+  }
+
+  
+  .balance-container {
+    top: 16px;
+    right: 16px;
+  }
+  
+  .tyb-logo-container {
+    bottom: 16px;
+    right: 16px;
+    width: 50px;
+    height: 25px;
+  }
+  
+  .balance-text {
+    font-size: 22px;
+  }
+  
+  .sticker {
+    width: 70px !important;
+    height: 70px !important;
+  }
+  
+  .sticker[data-sticker-id="sticker-5"] {
+    width: 120px !important;
+    height: auto !important;
+    max-height: 90px !important;
+  }
+  
+  .sticker[data-sticker-id="sticker-7"] {
+    width: 100px !important;
+    height: auto !important;
+    max-height: 90px !important;
+  }
+  
+  .sticker.dragging {
+    transform: translate(-50%, -50%) scale(1.08);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+  }
 }
