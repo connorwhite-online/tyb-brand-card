@@ -33,7 +33,7 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen overflow-hidden drag-container" style={{ background: 'linear-gradient(to bottom right, var(--card-gradient-from), var(--card-gradient-to))' }}>
+    <div className="overflow-hidden drag-container" style={{ height: '100dvh', background: 'linear-gradient(to bottom right, var(--card-gradient-from), var(--card-gradient-to))' }}>
       {/* Mobile Layout: Card at top with 48px margin */}
       <div className="md:hidden pt-12 px-[5%] h-full flex flex-col">
         {/* 2D Card Container - 90% width on mobile */}

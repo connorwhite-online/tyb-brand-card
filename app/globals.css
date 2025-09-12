@@ -76,6 +76,11 @@ body {
   overscroll-behavior-y: none;
   /* Prevent bounce/elastic scrolling on iOS */
   -webkit-overflow-scrolling: auto;
+  /* Support dynamic viewport height on mobile Safari */
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
 }
 
 html {
@@ -85,6 +90,9 @@ html {
   overscroll-behavior-y: none;
   /* Prevent zoom on double tap */
   touch-action: manipulation;
+  /* Support dynamic viewport height on mobile Safari */
+  height: 100%;
+  height: 100dvh;
 }
 
 /* Prevent touch actions that could interfere with dragging */
