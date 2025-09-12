@@ -110,7 +110,7 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
     };
   }, [isEditMode, stickers.length]); // Re-run when edit mode changes or stickers change
 
-  // Calculate rotation based on gyroscope data
+  // Calculate rotation and shadow based on gyroscope data
   const getCardTransform = () => {
     if (isEditMode || !gyroscopeData.beta || !gyroscopeData.gamma) {
       return 'rotateX(0deg) rotateY(0deg)';
@@ -122,6 +122,54 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
     const rotationY = Math.max(-maxRotation, Math.min(maxRotation, -gyroscopeData.gamma / 6));
 
     return `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+  };
+
+  // Calculate dynamic shadow based on gyroscope tilt
+  const getDynamicShadow = () => {
+    if (isEditMode || !gyroscopeData.beta || !gyroscopeData.gamma) {
+      return `
+        0 4px 16px rgba(0, 0, 0, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05)
+      `;
+    }
+
+    // Calculate shadow offset based on tilt
+    const shadowX = (-gyroscopeData.gamma / 6) * 0.5; // Horizontal shadow offset
+    const shadowY = (gyroscopeData.beta / 6) * 0.5 + 4; // Vertical shadow offset (always positive with base offset)
+    const shadowBlur = Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6) + 16; // Dynamic blur
+    const shadowSpread = Math.max(0, (Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6)) * 0.3); // Dynamic spread
+
+    return `
+      ${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowSpread}px rgba(0, 0, 0, 0.15),
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05)
+    `;
+  };
+
+  // Calculate dynamic highlight based on gyroscope tilt
+  const getDynamicHighlight = () => {
+    if (isEditMode || !gyroscopeData.beta || !gyroscopeData.gamma) {
+      return {
+        background: 'transparent',
+        opacity: 0,
+      };
+    }
+
+    // Calculate highlight position based on tilt (inverted for realistic light behavior)
+    const highlightX = 50 + (gyroscopeData.gamma / 6) * 2; // Move highlight opposite to tilt
+    const highlightY = 50 - (gyroscopeData.beta / 6) * 2; // Move highlight opposite to tilt
+    const intensity = (Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6)) / 30; // Dynamic intensity
+
+    return {
+      background: `radial-gradient(circle at ${highlightX}% ${highlightY}%, 
+        rgba(255, 255, 255, ${0.15 + intensity}) 0%, 
+        rgba(255, 255, 255, ${0.08 + intensity * 0.5}) 30%, 
+        transparent 70%)`,
+      opacity: Math.min(0.8, 0.3 + intensity),
+    };
   };
 
   const handleStickerDrag = (id: string, clientX: number, clientY: number, cardRect: DOMRect) => {
@@ -175,7 +223,18 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
         }}
       >
         {/* Card Background */}
-        <div className="card-surface">
+        <div 
+          className="card-surface"
+          style={{
+            boxShadow: getDynamicShadow(),
+          }}
+        >
+          {/* Dynamic highlight overlay */}
+          <div 
+            className="highlight-overlay"
+            style={getDynamicHighlight()}
+          />
+          
           {/* Logo */}
           <div className="logo-container">
             <Image 

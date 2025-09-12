@@ -135,22 +135,72 @@ canvas {
   aspect-ratio: 1.586; /* Credit card aspect ratio */
   transform-style: preserve-3d;
   transition: transform 0.1s ease-out;
+  position: relative;
+}
+
+/* Create card thickness using pseudo-elements */
+.card-2d::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.05));
+  border-radius: 24px;
+  z-index: -2;
+  transform: translateZ(-8px);
+}
+
+.card-2d::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
+  border-radius: 24px;
+  z-index: -1;
+  transform: translateZ(-4px);
 }
 
 .card-surface {
   width: 100%;
   height: 100%;
-  background-color: #f6fbc7;
+  background: linear-gradient(135deg, #f6fbc7 0%, #f0f5c4 50%, #e8f0bf 100%);
   border-radius: 24px;
   position: relative;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transform-style: preserve-3d;
+  transform: translateZ(8px);
   /* Prevent visual artifacts during touch interactions */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  -webkit-transform: translateZ(8px);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  /* Add subtle texture */
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05) 1px, transparent 1px);
+}
+
+/* Dynamic highlight overlay */
+.highlight-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  pointer-events: none;
+  transition: all 0.1s ease-out;
+  z-index: 1;
+  mix-blend-mode: overlay;
 }
 
 /* Logo Styles */
@@ -162,9 +212,15 @@ canvas {
   height: 80px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   background-color: #e5e7eb;
   border: 2px solid #d1d5db;
+  transform: translateZ(4px);
+  transition: transform 0.1s ease-out;
+  z-index: 2;
 }
 
 .logo-image {
@@ -179,6 +235,9 @@ canvas {
   position: absolute;
   top: 16px;
   right: 16px;
+  transform: translateZ(6px);
+  transition: transform 0.1s ease-out;
+  z-index: 2;
 }
 
 /* TYB Logo Styles */
@@ -188,6 +247,9 @@ canvas {
   right: 16px;
   width: 60px;
   height: 30px;
+  transform: translateZ(3px);
+  transition: transform 0.1s ease-out;
+  z-index: 2;
 }
 
 .tyb-logo-image {
@@ -208,13 +270,15 @@ canvas {
 /* Sticker Styles */
 .sticker {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateZ(12px);
   cursor: grab;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 10;
   transform-style: preserve-3d;
+  /* Enhanced shadows for depth */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
   /* Prevent visual artifacts during dragging on Safari */
-  -webkit-transform: translate(-50%, -50%) translateZ(0);
+  -webkit-transform: translate(-50%, -50%) translateZ(12px);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   /* Force hardware acceleration */
@@ -246,15 +310,15 @@ canvas {
 }
 
 .sticker.editable:hover {
-  transform: translate(-50%, -50%) scale(1.05);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  transform: translate(-50%, -50%) scale(1.05) translateZ(16px);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .sticker.dragging {
   cursor: grabbing;
-  transform: translate(-50%, -50%) scale(1.1);
-  -webkit-transform: translate(-50%, -50%) scale(1.1) translateZ(0);
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+  transform: translate(-50%, -50%) scale(1.1) translateZ(20px);
+  -webkit-transform: translate(-50%, -50%) scale(1.1) translateZ(20px);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.25)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   z-index: 20;
   /* Smoother transition for cross-browser compatibility */
   transition: transform 0.1s ease-out, filter 0.1s ease-out;
@@ -316,9 +380,9 @@ canvas {
   }
   
   .sticker.dragging {
-    transform: translate(-50%, -50%) scale(1.08);
-    -webkit-transform: translate(-50%, -50%) scale(1.08) translateZ(0);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+    transform: translate(-50%, -50%) scale(1.08) translateZ(18px);
+    -webkit-transform: translate(-50%, -50%) scale(1.08) translateZ(18px);
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
     transition: transform 0.1s ease-out, filter 0.1s ease-out;
   }
 }
