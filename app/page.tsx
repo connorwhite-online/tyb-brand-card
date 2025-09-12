@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Card2D from './components/Card2D';
 import ThemeToggle from './components/ThemeToggle';
+import StickerInventory from './components/StickerInventory';
 import { useEditMode } from './hooks/useEditMode';
 
 export default function Home() {
-  const { isEditing, toggleEdit, saveChanges } = useEditMode();
+  const { isEditing, toggleEdit, saveChanges, selectedStickers, toggleSticker } = useEditMode();
   const [displayText, setDisplayText] = useState('Edit');
   const [isTextTransitioning, setIsTextTransitioning] = useState(false);
 
@@ -35,12 +36,13 @@ export default function Home() {
   return (
     <div className="overflow-hidden drag-container" style={{ height: '100dvh', background: 'linear-gradient(to bottom right, var(--card-gradient-from), var(--card-gradient-to))' }}>
       {/* Mobile Layout: Card at top with 48px margin */}
-      <div className="md:hidden pt-12 px-[5%] h-full flex flex-col">
+      <div className="md:hidden pt-12 px-[5%] h-full flex flex-col justify-start">
         {/* 2D Card Container - 90% width on mobile */}
         <div className="w-full mx-auto" style={{ aspectRatio: '1.586/1' }}>
           <Card2D 
             isEditMode={isEditing}
             className="w-full h-full"
+            selectedStickers={selectedStickers}
           />
         </div>
 
@@ -85,15 +87,26 @@ export default function Home() {
             </span>
           </button>
         </div>
+
+        {/* Sticker Inventory - Show only in edit mode */}
+        {isEditing && (
+          <div className="px-4 pb-4">
+            <StickerInventory
+              selectedStickers={selectedStickers}
+              onStickerToggle={toggleSticker}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Desktop Layout: Card centered vertically and horizontally */}
-      <div className="hidden md:flex md:flex-col md:items-center md:justify-center h-full">
+      {/* Desktop Layout: Card aligned to top center */}
+      <div className="hidden md:flex md:flex-col md:items-center md:justify-start md:pt-16 h-full">
         {/* 2D Card Container - 30% width on desktop */}
         <div className="w-[30%] mx-auto" style={{ aspectRatio: '1.586/1' }}>
           <Card2D 
             isEditMode={isEditing}
             className="w-full h-full"
+            selectedStickers={selectedStickers}
           />
         </div>
 
@@ -138,6 +151,14 @@ export default function Home() {
             </span>
           </button>
         </div>
+
+        {/* Sticker Inventory - Show only in edit mode */}
+        {isEditing && (
+          <StickerInventory
+            selectedStickers={selectedStickers}
+            onStickerToggle={toggleSticker}
+          />
+        )}
       </div>
 
       {/* Theme Toggle - Fixed at bottom center */}

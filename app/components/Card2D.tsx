@@ -7,6 +7,7 @@ import { useGyroscope } from '../hooks/useGyroscope';
 interface Card2DProps {
   isEditMode: boolean;
   className?: string;
+  selectedStickers: string[];
 }
 
 interface StickerPosition {
@@ -24,7 +25,7 @@ declare global {
   }
 }
 
-const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
+const Card2D: React.FC<Card2DProps> = ({ isEditMode, className, selectedStickers }) => {
   const { gyroscopeData } = useGyroscope(!isEditMode);
   const [stickers, setStickers] = useState<StickerPosition[]>([
     { id: 'sticker-1', x: 40, y: 30, isDragging: false, zIndex: 1 },
@@ -297,6 +298,7 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
 
           {/* Stickers */}
           {stickers
+            .filter((sticker) => selectedStickers.includes(sticker.id)) // Only show selected stickers
             .sort((a, b) => a.zIndex - b.zIndex) // Render in z-index order
             .map((sticker) => (
             <div

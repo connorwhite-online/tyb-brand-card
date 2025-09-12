@@ -35,6 +35,8 @@ export interface EditModeState {
   isEditing: boolean;
   toggleEdit: () => void;
   saveChanges: () => void;
+  selectedStickers: string[];
+  toggleSticker: (stickerId: string) => void;
 }
 
 export interface DragState {
