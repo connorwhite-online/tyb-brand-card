@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useGyroscope } from '../hooks/useGyroscope';
 
@@ -17,6 +17,13 @@ interface StickerPosition {
   zIndex: number;
 }
 
+// Extend HTMLDivElement to include our custom cleanup function
+declare global {
+  interface HTMLDivElement {
+    _touchStartCleanup?: () => void;
+  }
+}
+
 const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
   const { gyroscopeData } = useGyroscope(!isEditMode);
   const [stickers, setStickers] = useState<StickerPosition[]>([
@@ -28,6 +35,80 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
     { id: 'sticker-6', x: 25, y: 45, isDragging: false, zIndex: 6 },
     { id: 'sticker-7', x: 55, y: 65, isDragging: false, zIndex: 7 },
   ]);
+  
+  // Throttle state updates for better performance
+  const dragUpdateRef = React.useRef<number | null>(null);
+  const stickerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (dragUpdateRef.current) {
+        cancelAnimationFrame(dragUpdateRef.current);
+      }
+    };
+  }, []);
+
+  // Set up non-passive touch event listeners for each sticker
+  useEffect(() => {
+    const handleTouchEvents = () => {
+      Object.entries(stickerRefs.current).forEach(([stickerId, element]) => {
+        if (!element) return;
+
+        const handleTouchStart = (e: TouchEvent) => {
+          if (!isEditMode) return;
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Bring sticker to front when touched
+          bringToFront(stickerId);
+          
+          setStickers(prev =>
+            prev.map(s => s.id === stickerId ? { ...s, isDragging: true } : s)
+          );
+
+          const card = element.closest('.card-2d') as HTMLElement;
+          const cardRect = card.getBoundingClientRect();
+
+          const handleTouchMove = (e: TouchEvent) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleStickerDrag(stickerId, touch.clientX, touch.clientY, cardRect);
+          };
+
+          const handleTouchEnd = (e: TouchEvent) => {
+            e.preventDefault();
+            setStickers(prev =>
+              prev.map(s => s.id === stickerId ? { ...s, isDragging: false } : s)
+            );
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+          };
+
+          document.addEventListener('touchmove', handleTouchMove, { passive: false });
+          document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        };
+
+        element.addEventListener('touchstart', handleTouchStart, { passive: false });
+        
+        // Store cleanup function
+        element._touchStartCleanup = () => {
+          element.removeEventListener('touchstart', handleTouchStart);
+        };
+      });
+    };
+
+    handleTouchEvents();
+
+    // Cleanup
+    return () => {
+      Object.values(stickerRefs.current).forEach(element => {
+        if (element && element._touchStartCleanup) {
+          element._touchStartCleanup();
+        }
+      });
+    };
+  }, [isEditMode, stickers.length]); // Re-run when edit mode changes or stickers change
 
   // Calculate rotation based on gyroscope data
   const getCardTransform = () => {
@@ -61,11 +142,19 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
     const clampedX = Math.max(minBoundX, Math.min(maxBoundX, x));
     const clampedY = Math.max(minBoundY, Math.min(maxBoundY, y));
 
-    setStickers(prev =>
-      prev.map(sticker =>
-        sticker.id === id ? { ...sticker, x: clampedX, y: clampedY } : sticker
-      )
-    );
+    // Throttle updates using requestAnimationFrame for better performance
+    if (dragUpdateRef.current) {
+      cancelAnimationFrame(dragUpdateRef.current);
+    }
+    
+    dragUpdateRef.current = requestAnimationFrame(() => {
+      setStickers(prev =>
+        prev.map(sticker =>
+          sticker.id === id ? { ...sticker, x: clampedX, y: clampedY } : sticker
+        )
+      );
+      dragUpdateRef.current = null;
+    });
   };
 
   const bringToFront = (id: string) => {
@@ -131,6 +220,9 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
             .map((sticker) => (
             <div
               key={sticker.id}
+              ref={(el) => {
+                stickerRefs.current[sticker.id] = el;
+              }}
               className={`sticker ${isEditMode ? 'editable' : ''} ${sticker.isDragging ? 'dragging' : ''}`}
               data-sticker-id={sticker.id}
               style={{
@@ -168,7 +260,7 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
               }}
               onTouchStart={(e) => {
                 if (!isEditMode) return;
-                e.preventDefault();
+                // Don't call preventDefault here - handle it in the native listener
                 
                 // Bring sticker to front when touched
                 bringToFront(sticker.id);
@@ -176,25 +268,6 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
                 setStickers(prev =>
                   prev.map(s => s.id === sticker.id ? { ...s, isDragging: true } : s)
                 );
-
-                const card = e.currentTarget.closest('.card-2d') as HTMLElement;
-                const cardRect = card.getBoundingClientRect();
-
-                const handleTouchMove = (e: TouchEvent) => {
-                  const touch = e.touches[0];
-                  handleStickerDrag(sticker.id, touch.clientX, touch.clientY, cardRect);
-                };
-
-                const handleTouchEnd = () => {
-                  setStickers(prev =>
-                    prev.map(s => s.id === sticker.id ? { ...s, isDragging: false } : s)
-                  );
-                  document.removeEventListener('touchmove', handleTouchMove);
-                  document.removeEventListener('touchend', handleTouchEnd);
-                };
-
-                document.addEventListener('touchmove', handleTouchMove);
-                document.addEventListener('touchend', handleTouchEnd);
               }}
             >
               <Image 

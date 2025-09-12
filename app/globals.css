@@ -101,6 +101,12 @@ canvas {
   /* Prevent context menu on long press */
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  /* Force hardware acceleration for smoother rendering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  /* Prevent visual artifacts during touch interactions */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* 2D Card Styles */
@@ -132,6 +138,11 @@ canvas {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transform-style: preserve-3d;
+  /* Prevent visual artifacts during touch interactions */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Logo Styles */
@@ -194,6 +205,12 @@ canvas {
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 10;
   transform-style: preserve-3d;
+  /* Prevent visual artifacts during dragging on Safari */
+  -webkit-transform: translate(-50%, -50%) translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Force hardware acceleration */
+  will-change: transform;
 }
 
 /* Default size for square stickers */
@@ -228,8 +245,11 @@ canvas {
 .sticker.dragging {
   cursor: grabbing;
   transform: translate(-50%, -50%) scale(1.1);
+  -webkit-transform: translate(-50%, -50%) scale(1.1) translateZ(0);
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
   z-index: 20;
+  /* Smoother transition for cross-browser compatibility */
+  transition: transform 0.1s ease-out, filter 0.1s ease-out;
 }
 
 .sticker-image {
@@ -289,6 +309,8 @@ canvas {
   
   .sticker.dragging {
     transform: translate(-50%, -50%) scale(1.08);
+    -webkit-transform: translate(-50%, -50%) scale(1.08) translateZ(0);
     filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+    transition: transform 0.1s ease-out, filter 0.1s ease-out;
   }
 }
