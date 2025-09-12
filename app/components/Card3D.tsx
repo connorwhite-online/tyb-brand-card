@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo, Suspense } from 'react';
+import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGyroscope } from '../hooks/useGyroscope';
@@ -26,19 +26,70 @@ const CardMesh: React.FC<{
 }> = ({ gyroscopeData, isEditMode }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
+  
+  // Transition state for smooth lerp between edit and saved modes
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionProgress, setTransitionProgress] = useState(0);
+  const transitionStartTimeRef = useRef<number | null>(null);
+  const previousEditModeRef = useRef(isEditMode);
+
+  // Handle transition when edit mode changes from editing to saved
+  useEffect(() => {
+    // Only trigger transition when switching from edit mode to saved mode
+    if (previousEditModeRef.current === true && isEditMode === false) {
+      setIsTransitioning(true);
+      setTransitionProgress(0);
+      transitionStartTimeRef.current = Date.now();
+    }
+    
+    previousEditModeRef.current = isEditMode;
+  }, [isEditMode]);
 
   useFrame(() => {
-    if (!groupRef.current || isEditMode) return;
+    if (!groupRef.current) return;
+
+    // Handle transition animation
+    if (isTransitioning) {
+      const elapsed = Date.now() - (transitionStartTimeRef.current || 0);
+      const duration = 800; // 800ms transition duration
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease-out cubic function for smooth transition
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setTransitionProgress(easedProgress);
+      
+      if (progress >= 1) {
+        setIsTransitioning(false);
+        setTransitionProgress(0);
+        transitionStartTimeRef.current = null;
+      }
+    }
+
+    if (isEditMode) {
+      // Static position in edit mode
+      groupRef.current.rotation.x = 0;
+      groupRef.current.rotation.y = 0;
+      return;
+    }
 
     // Apply gyroscope rotation when not in edit mode
     if (gyroscopeData.beta !== null && gyroscopeData.gamma !== null) {
       // Convert degrees to radians and limit rotation
       const maxRotation = Math.PI / 12; // 15 degrees max
-      const betaRad = Math.max(-maxRotation, Math.min(maxRotation, (gyroscopeData.beta * Math.PI) / 180 / 6));
-      const gammaRad = Math.max(-maxRotation, Math.min(maxRotation, (gyroscopeData.gamma * Math.PI) / 180 / 6));
+      const targetBetaRad = Math.max(-maxRotation, Math.min(maxRotation, (gyroscopeData.beta * Math.PI) / 180 / 6));
+      const targetGammaRad = Math.max(-maxRotation, Math.min(maxRotation, (gyroscopeData.gamma * Math.PI) / 180 / 6));
       
-      groupRef.current.rotation.x = betaRad;
-      groupRef.current.rotation.y = -gammaRad;
+      if (isTransitioning) {
+        // Lerp between static position (0,0) and gyroscope position
+        const currentBetaRad = targetBetaRad * transitionProgress;
+        const currentGammaRad = targetGammaRad * transitionProgress;
+        
+        groupRef.current.rotation.x = currentBetaRad;
+        groupRef.current.rotation.y = -currentGammaRad;
+      } else {
+        groupRef.current.rotation.x = targetBetaRad;
+        groupRef.current.rotation.y = -targetGammaRad;
+      }
     }
   });
 

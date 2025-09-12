@@ -39,6 +39,13 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
   // Throttle state updates for better performance
   const dragUpdateRef = React.useRef<number | null>(null);
   const stickerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  
+  // Transition state for smooth lerp between edit and saved modes
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionProgress, setTransitionProgress] = useState(0);
+  const transitionStartTimeRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const previousEditModeRef = useRef(isEditMode);
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -46,8 +53,44 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
       if (dragUpdateRef.current) {
         cancelAnimationFrame(dragUpdateRef.current);
       }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, []);
+
+  // Handle transition when edit mode changes from editing to saved
+  useEffect(() => {
+    // Only trigger transition when switching from edit mode to saved mode
+    if (previousEditModeRef.current === true && isEditMode === false) {
+      setIsTransitioning(true);
+      setTransitionProgress(0);
+      transitionStartTimeRef.current = Date.now();
+      
+      const animateTransition = () => {
+        const elapsed = Date.now() - (transitionStartTimeRef.current || 0);
+        const duration = 800; // 800ms transition duration
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease-out cubic function for smooth transition
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        
+        setTransitionProgress(easedProgress);
+        
+        if (progress < 1) {
+          animationFrameRef.current = requestAnimationFrame(animateTransition);
+        } else {
+          setIsTransitioning(false);
+          setTransitionProgress(0);
+          transitionStartTimeRef.current = null;
+        }
+      };
+      
+      animationFrameRef.current = requestAnimationFrame(animateTransition);
+    }
+    
+    previousEditModeRef.current = isEditMode;
+  }, [isEditMode]);
 
   // Set up non-passive touch event listeners for each sticker
   useEffect(() => {
@@ -118,10 +161,17 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
 
     // Limit rotation for subtle effect
     const maxRotation = 15;
-    const rotationX = Math.max(-maxRotation, Math.min(maxRotation, gyroscopeData.beta / 6));
-    const rotationY = Math.max(-maxRotation, Math.min(maxRotation, -gyroscopeData.gamma / 6));
+    const targetRotationX = Math.max(-maxRotation, Math.min(maxRotation, gyroscopeData.beta / 6));
+    const targetRotationY = Math.max(-maxRotation, Math.min(maxRotation, -gyroscopeData.gamma / 6));
 
-    return `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+    // If transitioning, lerp between static position (0,0) and gyroscope position
+    if (isTransitioning) {
+      const currentRotationX = targetRotationX * transitionProgress;
+      const currentRotationY = targetRotationY * transitionProgress;
+      return `rotateX(${currentRotationX}deg) rotateY(${currentRotationY}deg)`;
+    }
+
+    return `rotateX(${targetRotationX}deg) rotateY(${targetRotationY}deg)`;
   };
 
   // Calculate dynamic drop shadow based on gyroscope tilt
@@ -130,13 +180,28 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className }) => {
       return '0 8px 32px rgba(0, 0, 0, 0.1)';
     }
 
-    // Calculate shadow offset based on tilt - shadow moves opposite to tilt for realistic effect
-    const shadowX = (-gyroscopeData.gamma / 6) * 2; // Horizontal shadow offset
-    const shadowY = (gyroscopeData.beta / 6) * 1.5 + 8; // Vertical shadow offset (always positive with base offset)
-    const shadowBlur = Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6) + 32; // Dynamic blur
-    const shadowOpacity = Math.min(0.3, 0.1 + (Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6)) / 60); // Dynamic opacity
+    // Calculate target shadow offset based on tilt - shadow moves opposite to tilt for realistic effect
+    const targetShadowX = (-gyroscopeData.gamma / 6) * 2; // Horizontal shadow offset
+    const targetShadowY = (gyroscopeData.beta / 6) * 1.5 + 8; // Vertical shadow offset (always positive with base offset)
+    const targetShadowBlur = Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6) + 32; // Dynamic blur
+    const targetShadowOpacity = Math.min(0.3, 0.1 + (Math.abs(gyroscopeData.beta / 6) + Math.abs(gyroscopeData.gamma / 6)) / 60); // Dynamic opacity
 
-    return `${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
+    // If transitioning, lerp between static shadow and gyroscope shadow
+    if (isTransitioning) {
+      const staticShadowX = 0;
+      const staticShadowY = 8;
+      const staticShadowBlur = 32;
+      const staticShadowOpacity = 0.1;
+      
+      const currentShadowX = staticShadowX + (targetShadowX - staticShadowX) * transitionProgress;
+      const currentShadowY = staticShadowY + (targetShadowY - staticShadowY) * transitionProgress;
+      const currentShadowBlur = staticShadowBlur + (targetShadowBlur - staticShadowBlur) * transitionProgress;
+      const currentShadowOpacity = staticShadowOpacity + (targetShadowOpacity - staticShadowOpacity) * transitionProgress;
+      
+      return `${currentShadowX}px ${currentShadowY}px ${currentShadowBlur}px rgba(0, 0, 0, ${currentShadowOpacity})`;
+    }
+
+    return `${targetShadowX}px ${targetShadowY}px ${targetShadowBlur}px rgba(0, 0, 0, ${targetShadowOpacity})`;
   };
 
   const handleStickerDrag = (id: string, clientX: number, clientY: number, cardRect: DOMRect) => {

@@ -134,7 +134,8 @@ canvas {
   max-width: 500px;
   aspect-ratio: 1.586; /* Credit card aspect ratio */
   transform-style: preserve-3d;
-  transition: transform 0.1s ease-out;
+  /* Reduced transition duration since we're handling the main transition programmatically */
+  transition: transform 0.05s ease-out;
 }
 
 .card-surface {
