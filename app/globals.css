@@ -244,9 +244,12 @@ canvas {
   cursor: grab;
 }
 
-.sticker.editable:hover {
-  transform: translate(-50%, -50%) scale(1.05);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+/* Desktop-only hover effects for stickers */
+@media (min-width: 769px) {
+  .sticker.editable:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
 }
 
 .sticker.dragging {
