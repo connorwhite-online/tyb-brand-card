@@ -328,11 +328,6 @@ canvas {
   transform: scale(1);
 }
 
-.inventory-item.visible:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 
 .inventory-item.selected {
   border-color: var(--button-primary);
@@ -340,11 +335,6 @@ canvas {
   box-shadow: 0 0 0 1px var(--button-primary);
 }
 
-.inventory-item.selected.visible:hover {
-  border-color: var(--button-primary-hover);
-  box-shadow: 0 0 0 1px var(--button-primary-hover), 0 4px 12px rgba(59, 130, 246, 0.25);
-  transform: scale(1.05);
-}
 
 .inventory-sticker-image {
   width: 100%;
@@ -359,9 +349,6 @@ canvas {
   border-color: #6b7280;
 }
 
-.dark .inventory-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
 
 .dark .inventory-item.selected {
   background: rgba(59, 130, 246, 0.2);
@@ -428,13 +415,6 @@ canvas {
     padding: 6px;
   }
   
-  .inventory-item.visible:hover {
-    transform: scale(1.03);
-  }
-  
-  .inventory-item.selected.visible:hover {
-    transform: scale(1.03);
-  }
   
   .inventory-title {
     font-size: 16px;

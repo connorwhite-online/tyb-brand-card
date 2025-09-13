@@ -152,7 +152,7 @@ const Card2D: React.FC<Card2DProps> = ({ isEditMode, className, selectedStickers
         }
       });
     };
-  }, [isEditMode, stickers.length]); // Re-run when edit mode changes or stickers change
+  }, [isEditMode, stickers.length, selectedStickers]); // Re-run when edit mode changes, stickers change, or selected stickers change
 
   // Calculate rotation and shadow based on gyroscope data
   const getCardTransform = () => {
