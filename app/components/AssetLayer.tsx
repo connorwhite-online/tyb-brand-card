@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
-import { CardDimensions, StaticAsset, CustomizableAsset } from '../types';
+import { CardDimensions, CustomizableAsset } from '../types';
 import DraggableAsset from './DraggableAsset';
 
 interface AssetLayerProps {

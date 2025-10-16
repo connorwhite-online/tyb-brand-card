@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, useTexture, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { GyroscopeData } from '../types';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 interface Card3DProps {
   isEditMode: boolean;
@@ -303,9 +304,9 @@ function StickerMesh({
     };
   }, [isDragging, hovered, onDragEnd, gl]);
 
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (!isEditMode) return;
-    e.stopPropagation?.();
+    e.stopPropagation();
     setIsDragging(true);
     gl.domElement.style.cursor = 'grabbing';
     if (onDragStart) onDragStart();
@@ -355,7 +356,7 @@ function Scene({
   gyroscopeData?: GyroscopeData;
 }) {
   const cardGroupRef = useRef<THREE.Group>(null);
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<OrbitControlsImpl>(null);
 
   const handleDragEnd = (stickerId: string, position: { x: number; y: number }) => {
     setStickers(prev => 
