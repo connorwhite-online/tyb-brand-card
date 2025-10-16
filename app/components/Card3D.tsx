@@ -357,6 +357,32 @@ function Scene({
 }) {
   const cardGroupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  
+  // Detect mobile device for responsive rotate speed
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Gyroscope calibration - store initial values as neutral position
+  const calibrationRef = useRef<{ beta: number; gamma: number } | null>(null);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Calibrate gyroscope on first valid reading
+  useEffect(() => {
+    if (gyroscopeData && gyroscopeData.beta !== null && gyroscopeData.gamma !== null && !calibrationRef.current) {
+      calibrationRef.current = {
+        beta: gyroscopeData.beta,
+        gamma: gyroscopeData.gamma
+      };
+    }
+  }, [gyroscopeData]);
 
   const handleDragEnd = (stickerId: string, position: { x: number; y: number }) => {
     setStickers(prev => 
@@ -409,11 +435,16 @@ function Scene({
       );
 
       // Apply gyroscope rotation if available
-      if (gyroscopeData && gyroscopeData.beta !== null && gyroscopeData.gamma !== null) {
-        // Very subtle rotation - much less than the 2D card
-        const maxRotation = 0.15; // Limit to 0.15 radians (~8.6 degrees)
-        const targetRotationX = Math.max(-maxRotation, Math.min(maxRotation, (gyroscopeData.beta / 6) * (Math.PI / 180)));
-        const targetRotationY = Math.max(-maxRotation, Math.min(maxRotation, (-gyroscopeData.gamma / 6) * (Math.PI / 180)));
+      if (gyroscopeData && gyroscopeData.beta !== null && gyroscopeData.gamma !== null && calibrationRef.current) {
+        // Calculate relative rotation from calibrated neutral position
+        const deltaBeta = gyroscopeData.beta - calibrationRef.current.beta;
+        const deltaGamma = gyroscopeData.gamma - calibrationRef.current.gamma;
+        
+        // Convert to radians with subtle multiplier
+        // Increased max rotation and smoother response
+        const maxRotation = 0.5; // Increased from 0.15 to allow more tilt
+        const targetRotationX = Math.max(-maxRotation, Math.min(maxRotation, (deltaBeta / 6) * (Math.PI / 180)));
+        const targetRotationY = Math.max(-maxRotation, Math.min(maxRotation, (-deltaGamma / 6) * (Math.PI / 180)));
 
         // Create target quaternion from euler angles
         const targetEuler = new THREE.Euler(targetRotationX, targetRotationY, 0, 'XYZ');
@@ -436,7 +467,7 @@ function Scene({
         maxDistance={7}
         minDistance={3}
         target={[0, 0, 0]}
-        rotateSpeed={0.05}
+        rotateSpeed={isMobile ? 0.1 : 0.05}
         minPolarAngle={Math.PI / 2 - 0.5}
         maxPolarAngle={Math.PI / 2 + 0.5}
         minAzimuthAngle={-0.5}
