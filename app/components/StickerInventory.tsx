@@ -23,32 +23,20 @@ const StickerInventory: React.FC<StickerInventoryProps> = ({
   onStickerToggle,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [titleVisible, setTitleVisible] = useState(false);
 
   useEffect(() => {
-    // Start title animation first
-    const titleTimer = setTimeout(() => {
-      setTitleVisible(true);
-    }, 50);
-
     // Start sticker animations with slight delay
     const stickerTimer = setTimeout(() => {
       setIsVisible(true);
-    }, 150);
+    }, 50);
 
     return () => {
-      clearTimeout(titleTimer);
       clearTimeout(stickerTimer);
     };
   }, []);
 
   return (
     <div className="sticker-inventory">
-      <h3 
-        className={`inventory-title ${titleVisible ? 'visible' : ''}`}
-      >
-        Inventory
-      </h3>
       <div className="inventory-grid">
         {AVAILABLE_STICKERS.map((sticker, index) => {
           const isSelected = selectedStickers.includes(sticker.id);

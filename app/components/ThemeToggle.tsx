@@ -20,15 +20,13 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={handleToggle}
-      className="fixed left-1/2 z-50 rounded-full shadow-lg overflow-hidden flex items-center justify-center"
+      className="rounded-full shadow-lg overflow-hidden flex items-center justify-center"
       style={{
         backgroundColor: 'var(--toggle-bg)',
         border: '1px solid var(--toggle-hover)',
         padding: '12px',
         width: '48px',
         height: '48px',
-        bottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
-        transform: 'translateX(-50%)',
         transition: 'background-color 0.3s ease',
       }}
       onMouseEnter={(e) => {
